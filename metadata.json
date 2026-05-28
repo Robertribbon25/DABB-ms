@@ -1,0 +1,6 @@
+{
+  "name": "DAB Enterprise BMS",
+  "description": "A high-performance business management system for DAB Enterprise Ltd covering products, sales, customers, suppliers, inventory, employees, and real-time dashboard analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
