@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../services/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
-import { Plus, Search, ArrowUp, ArrowDown, Settings, Loader2 } from 'lucide-react';
+import { Plus, Search, ArrowUp, ArrowDown, Settings, Loader2, Package, RefreshCw, X, FileText, CheckCircle2 } from 'lucide-react';
 
 export default function Inventory() {
   const { user, hasRole } = useAuth();
@@ -76,10 +76,8 @@ export default function Inventory() {
 
     try {
       const res = await apiClient.post('/inventory', payload);
-      // Prepend to current audit lists
       setLogs([res.data, ...logs]);
       
-      // Update local products quantities state to reflect change immediately
       setProducts(products.map(p => {
         if (p._id === selectedProductId) {
           let newQty = p.quantity;
@@ -101,222 +99,290 @@ export default function Inventory() {
   };
 
   const filteredLogs = logs.filter(log => 
-    log.product.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    log.product?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (log.reason && log.reason.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    log.user.toLowerCase().includes(searchTerm.toLowerCase())
+    log.user?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    <div className="space-y-6">
-      
-      {/* HEADER SECTION */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 font-sans">
-        <div>
-          <h2 className="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">Inventory Ledger</h2>
-          <p className="text-sm text-gray-500">Document warehouse stock counts, physical adjustments, and audit ledger logs.</p>
+    <div className="min-h-screen bg-slate-50/50 text-slate-900 antialiased font-sans">
+      <div className="space-y-8 max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+        
+        {/* TOP HEADER PLATFORM */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-slate-200 pb-6">
+          <div>
+            <div className="flex items-center gap-2.5 text-xs font-semibold tracking-wider text-sky-600 uppercase">
+              <FileText className="w-4 h-4" />
+              <span>Warehouse Operations</span>
+            </div>
+            <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight mt-1">
+              Inventory Ledger
+            </h2>
+            <p className="text-sm text-slate-500 mt-1.5 max-w-2xl">
+              Real-time audit trailing, physical item overrides, and absolute stock adjustments for secure warehouse compliance.
+            </p>
+          </div>
+          
+          {isWriteAllowed && (
+            <button
+              onClick={handleOpenModal}
+              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 active:scale-[0.98] text-white text-sm font-semibold shadow-md shadow-sky-600/10 transition-all duration-150 group cursor-pointer"
+            >
+              <Plus className="w-4 h-4 transition-transform duration-200 group-hover:rotate-90" />
+              <span>Record Stock Audit</span>
+            </button>
+          )}
         </div>
-        {isWriteAllowed && (
-          <button
-            onClick={handleOpenModal}
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold shadow-sm transition-colors cursor-pointer"
-          >
-            <Settings className="w-4.5 h-4.5" />
-            <span>Record Stock Audit</span>
-          </button>
+
+        {/* METRICS DASHBOARD PANELS */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between group hover:border-slate-300 transition-all">
+            <div className="flex items-center gap-4">
+              <div className="p-3.5 bg-sky-50 text-sky-600 rounded-xl group-hover:scale-110 transition-transform">
+                <Package className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total SKUs Registered</p>
+                <h4 className="text-2xl font-black text-slate-800 mt-1">{products.length}</h4>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between group hover:border-slate-300 transition-all">
+            <div className="flex items-center gap-4">
+              <div className="p-3.5 bg-emerald-50 text-emerald-600 rounded-xl group-hover:scale-110 transition-transform">
+                <CheckCircle2 className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Actions Logged</p>
+                <h4 className="text-2xl font-black text-slate-800 mt-1">{logs.length}</h4>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between group hover:border-slate-300 transition-all">
+            <div className="flex items-center gap-4">
+              <div className="p-3.5 bg-amber-50 text-amber-600 rounded-xl group-hover:scale-110 transition-transform">
+                <RefreshCw className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Filtered Matches</p>
+                <h4 className="text-2xl font-black text-slate-800 mt-1">{filteredLogs.length}</h4>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* FILTER CONTROL BAR */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-2 shadow-xs focus-within:ring-4 focus-within:ring-sky-500/10 focus-within:border-sky-500/80 transition-all duration-200 flex items-center gap-3">
+          <div className="pl-3.5 text-slate-400">
+            <Search className="w-5 h-5" />
+          </div>
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search instantly by product name, adjustment notes, or supervisor..."
+            className="w-full text-base py-2.5 bg-transparent border-0 focus:outline-hidden text-slate-800 placeholder-slate-400"
+          />
+        </div>
+
+        {/* SECURE DATA LEDGER GRID */}
+        {loading ? (
+          <div className="flex flex-col items-center justify-center min-h-[400px] bg-white rounded-2xl border border-slate-200 shadow-xs">
+            <Loader2 className="w-9 h-9 animate-spin text-sky-600" />
+            <p className="text-sm text-slate-400 mt-3 font-semibold tracking-wide">Retrieving ledger state...</p>
+          </div>
+        ) : filteredLogs.length > 0 ? (
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden hover:shadow-md transition-shadow duration-300">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-sm">
+                <thead className="bg-slate-50/70 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  <tr>
+                    <th className="py-4 px-6">Ledger Action</th>
+                    <th className="py-4 px-6">Product Details</th>
+                    <th className="py-4 px-4 text-center">Shift</th>
+                    <th className="py-4 px-4 text-center">Prior Stock</th>
+                    <th className="py-4 px-4 text-center">Post Stock</th>
+                    <th className="py-4 px-6">Authorized By</th>
+                    <th className="py-4 px-6">Audit Description Statement</th>
+                    <th className="py-4 px-6 text-right">Timestamp</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-slate-700">
+                  {[...filteredLogs].reverse().map((log) => {
+                    const isIn = log.type === 'in';
+                    const isOut = log.type === 'out';
+                    return (
+                      <tr key={log._id} className="hover:bg-slate-50/40 transition-colors group">
+                        <td className="py-4 px-6 whitespace-nowrap">
+                          {isIn ? (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs bg-emerald-50 text-emerald-700 font-bold border border-emerald-200/50">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                              STOCK IN
+                            </span>
+                          ) : isOut ? (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs bg-rose-50 text-rose-700 font-bold border border-rose-200/50">
+                              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                              STOCK OUT
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs bg-amber-50 text-amber-800 font-bold border border-amber-200/60">
+                              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                              OVERRIDE
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-4 px-6 max-w-xs truncate">
+                          <span className="font-bold text-slate-900 block group-hover:text-sky-600 transition-colors">{log.product}</span>
+                          <span className="text-xs text-slate-400 font-mono block mt-0.5 tracking-tight">{log.productId}</span>
+                        </td>
+                        <td className={`py-4 px-4 text-center font-black font-mono text-base ${isIn ? 'text-emerald-600' : isOut ? 'text-rose-600' : 'text-slate-800'}`}>
+                          {isIn ? '+' : isOut ? '-' : ''}{log.quantity}
+                        </td>
+                        <td className="py-4 px-4 text-center font-mono text-slate-400 text-xs">
+                          {log.previousQuantity} units
+                        </td>
+                        <td className="py-4 px-4 text-center font-bold font-mono text-slate-900 bg-slate-50/40 group-hover:bg-slate-50 transition-colors">
+                          {log.newQuantity} units
+                        </td>
+                        <td className="py-4 px-6 font-semibold text-slate-600 whitespace-nowrap">
+                          {log.user}
+                        </td>
+                        <td className="py-4 px-6 text-slate-500 text-xs max-w-sm break-words font-medium leading-relaxed">
+                          {log.reason || <span className="text-slate-300 italic font-normal">No descriptive notes added.</span>}
+                        </td>
+                        <td className="py-4 px-6 text-right text-slate-400 font-mono text-xs whitespace-nowrap">
+                          {new Date(log.createdAt || log.date).toLocaleString()}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white rounded-2xl border-2 border-dashed border-slate-200 p-16 text-center text-slate-400 font-medium shadow-xs">
+            <Package className="w-10 h-10 mx-auto text-slate-300 mb-3" />
+            <p className="text-base text-slate-500 font-semibold">No system ledger records found</p>
+            <p className="text-xs text-slate-400 mt-1">Try resetting your filter string or record an explicit adjustment action above.</p>
+          </div>
         )}
-      </div>
 
-      {/* FILTER PANEL */}
-      <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs flex items-center gap-3">
-        <Search className="w-5 h-5 text-gray-400 flex-shrink-0" />
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Filter audit entries by product name, transaction description, or operator..."
-          className="w-full text-sm bg-transparent border-0 focus:outline-hidden text-slate-800"
-        />
-      </div>
-
-      {/* AUDIT LOG TABLE */}
-      {loading ? (
-        <div className="flex items-center justify-center min-h-[40vh]">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-sky-600"></div>
-        </div>
-      ) : filteredLogs.length > 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead className="bg-slate-50 border-b border-gray-150 text-[10px] font-bold text-gray-400 uppercase tracking-widest font-mono">
-                <tr>
-                  <th className="py-3 px-4">Ledger Action</th>
-                  <th className="py-3 px-4">Product Name</th>
-                  <th className="py-3 px-4 text-center">Qty Shift</th>
-                  <th className="py-3 px-4 text-center">Previous Stock</th>
-                  <th className="py-3 px-4 text-center">New Total Stock</th>
-                  <th className="py-3 px-4">Operator</th>
-                  <th className="py-3 px-4">Audit Description Notes</th>
-                  <th className="py-3 px-4">Logged Time</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 text-slate-750 font-sans">
-                {filteredLogs.reverse().map((log) => {
-                  const isIn = log.type === 'in';
-                  const isOut = log.type === 'out';
-                  return (
-                    <tr key={log._id} className="hover:bg-slate-50/20">
-                      <td className="py-4 px-4 font-mono">
-                        {isIn ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] bg-emerald-100 text-emerald-805 font-bold border border-emerald-150">
-                            <ArrowUp className="w-3 h-3 text-emerald-600" />
-                            STOCK INGEST
-                          </span>
-                        ) : isOut ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] bg-red-105 bg-red-100 text-red-650 font-bold border border-red-200">
-                            <ArrowDown className="w-3 h-3 text-red-500" />
-                            STOCK DEPLETE
-                          </span>
-                        ) : (
-                          <span className="inline-flex px-2 py-0.5 rounded-full text-[9px] bg-slate-100 text-slate-655 font-bold border border-slate-200">
-                            AUDIT OVERRIDE
-                          </span>
-                        )}
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className="font-bold text-slate-800 text-[13px]">{log.product}</span>
-                        <span className="block text-[10px] text-slate-400 font-mono font-medium">{log.productId}</span>
-                      </td>
-                      <td className={`py-4 px-4 text-center font-bold font-mono ${isIn ? 'text-emerald-600' : isOut ? 'text-red-550' : 'text-slate-800'}`}>
-                        {isIn ? '+' : isOut ? '-' : ''}{log.quantity}
-                      </td>
-                      <td className="py-4 px-4 text-center font-mono font-medium text-gray-400">
-                        {log.previousQuantity} units
-                      </td>
-                      <td className="py-4 px-4 text-center font-bold font-mono text-slate-900 bg-slate-50/40">
-                        {log.newQuantity} units
-                      </td>
-                      <td className="py-4 px-4 font-semibold text-slate-650">
-                        {log.user}
-                      </td>
-                      <td className="py-4 px-4 text-gray-500 font-medium">
-                        {log.reason || 'No description notes.'}
-                      </td>
-                      <td className="py-4 px-4 text-gray-400 font-mono text-[10px]">
-                        {new Date(log.createdAt || log.date).toLocaleString()}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      ) : (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center text-gray-400 font-mono text-xs">
-          No inventory ledger data logged. Try recording a manual stock audit.
-        </div>
-      )}
-
-      {/* AUDIT ADJUSTMENT MODAL */}
-      {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl relative border border-gray-100 animate-in fade-in zoom-in-95 Duration-150">
-            <h3 className="text-lg font-bold text-slate-850 tracking-tight font-sans mb-4">
-              Stock Audit Adjustment
-            </h3>
-
-            {formError && (
-              <div className="mb-4 bg-rose-50 border border-rose-150 rounded-lg p-3 text-xs text-rose-750">
-                {formError}
-              </div>
-            )}
-
-            <form onSubmit={handleStockAdjust} className="space-y-4 text-xs font-sans">
+        {/* MANAGEMENT FORM DIALOG MODAL */}
+        {modalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+            <div className="bg-white rounded-3xl w-full max-w-lg p-7 shadow-2xl relative border border-slate-100 animate-in fade-in zoom-in-95 duration-150">
               
-              <div>
-                <label className="block text-slate-705 font-bold mb-1 uppercase tracking-wider text-[10px]">Select Product *</label>
-                {products.length > 0 ? (
-                  <select
-                    value={selectedProductId}
-                    onChange={(e) => setSelectedProductId(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-gray-200 rounded-lg text-slate-800 focus:outline-hidden text-xs"
-                  >
-                    {products.map(p => (
-                      <option key={p._id} value={p._id}>{p.name} ({p.sku} | In stock: {p.quantity})</option>
-                    ))}
-                  </select>
-                ) : (
-                  <input
-                    type="text"
-                    disabled
-                    placeholder="No product registered."
-                    className="w-full px-3 py-2 bg-slate-50 border border-gray-200 rounded-lg text-slate-800 focus:outline-hidden"
-                  />
-                )}
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-xl font-extrabold text-slate-900 tracking-tight">
+                    Stock Audit Adjustment
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-0.5">Modify structural parameters of product warehouse volumes.</p>
+                </div>
+                <button 
+                  onClick={() => setModalOpen(false)} 
+                  className="p-1.5 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              {formError && (
+                <div className="mb-5 bg-rose-50 border border-rose-200 rounded-2xl p-4 text-xs font-semibold text-rose-800 leading-relaxed shadow-xs">
+                  {formError}
+                </div>
+              )}
+
+              <form onSubmit={handleStockAdjust} className="space-y-5 text-sm">
+                
                 <div>
-                  <label className="block text-slate-705 font-bold mb-1 uppercase tracking-wider text-[10px]">Adjustment Action *</label>
-                  <select
-                    value={adjustmentType}
-                    onChange={(e) => setAdjustmentType(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-gray-200 rounded-lg text-slate-805"
-                  >
-                    <option value="in">Increase Quantity (Stock In)</option>
-                    <option value="out">Decrease Quantity (Stock Out)</option>
-                    <option value="adjustment">Physical Override (Adjustment)</option>
-                  </select>
+                  <label className="block text-slate-500 font-bold mb-1.5 uppercase tracking-wider text-[10px]">Select Target Asset *</label>
+                  {products.length > 0 ? (
+                    <select
+                      value={selectedProductId}
+                      onChange={(e) => setSelectedProductId(e.target.value)}
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-hidden focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all text-sm cursor-pointer font-medium"
+                    >
+                      {products.map(p => (
+                        <option key={p._id} value={p._id}>{p.name} — [SKU: {p.sku} | In-Stock: {p.quantity}]</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      disabled
+                      placeholder="No active inventory structures registered."
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-400 focus:outline-hidden"
+                    />
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-slate-500 font-bold mb-1.5 uppercase tracking-wider text-[10px]">Adjustment Protocol *</label>
+                    <select
+                      value={adjustmentType}
+                      onChange={(e) => setAdjustmentType(e.target.value)}
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-hidden focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all text-sm cursor-pointer font-medium"
+                    >
+                      <option value="in">Increase Quantity (Stock In)</option>
+                      <option value="out">Decrease Quantity (Stock Out)</option>
+                      <option value="adjustment">Physical Override (Absolute)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-500 font-bold mb-1.5 uppercase tracking-wider text-[10px]">Delta Variance Quantity *</label>
+                    <input
+                      type="number"
+                      min="1"
+                      required
+                      value={quantity}
+                      onChange={(e) => setQuantity(e.target.value)}
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-mono focus:outline-hidden focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all text-sm"
+                    />
+                  </div>
                 </div>
 
                 <div>
-                  <label className="block text-slate-705 font-bold mb-1 uppercase tracking-wider text-[10px]">Change Quantity *</label>
-                  <input
-                    type="number"
-                    min="1"
+                  <label className="block text-slate-500 font-bold mb-1.5 uppercase tracking-wider text-[10px]">Justification Log Reason *</label>
+                  <textarea
+                    rows="3"
                     required
-                    value={quantity}
-                    onChange={(e) => setQuantity(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-gray-200 rounded-lg font-mono focus:outline-hidden"
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                    placeholder="Provide detailed, audit-compliant description notes regarding this physical change..."
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 transition-all text-sm placeholder-slate-400 leading-relaxed"
                   />
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-slate-705 font-bold mb-1 uppercase tracking-wider text-[10px]">Audit Reason *</label>
-                <textarea
-                  rows="3"
-                  required
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  placeholder="Summarize the adjustment reason, e.g. Received shipment, Physical audit correction, Damaged batch..."
-                  className="w-full px-3 py-2 bg-slate-50 border border-gray-200 rounded-lg focus:outline-hidden"
-                />
-              </div>
+                <div className="flex items-center justify-end gap-3 pt-5 border-t border-slate-100 mt-6">
+                  <button
+                    type="button"
+                    onClick={() => setModalOpen(false)}
+                    className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 rounded-xl font-bold transition-colors cursor-pointer text-sm"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submitting || products.length === 0}
+                    className="px-5 py-2.5 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white rounded-xl font-bold transition-all disabled:opacity-50 flex items-center gap-2 cursor-pointer text-sm shadow-md shadow-sky-600/5"
+                  >
+                    {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
+                    <span>Commit Ledger Entry</span>
+                  </button>
+                </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
-                <button
-                  type="button"
-                  onClick={() => setModalOpen(false)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-semibold transition-colors cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting || products.length === 0}
-                  className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg font-semibold transition-colors disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
-                >
-                  {submitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                  <span>Save Audit Entry</span>
-                </button>
-              </div>
-
-            </form>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
+      </div>
     </div>
   );
 }
