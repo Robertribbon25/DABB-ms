@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
-import { ShieldCheck, Loader2, AlertCircle } from 'lucide-react';
+import { ShieldCheck, Loader2, AlertCircle, Mail, Lock, Sparkles } from 'lucide-react';
 
 export default function Login() {
   const { login } = useAuth();
@@ -40,66 +40,91 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0F172A] flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 font-sans select-none">
-      <div className="max-w-md w-full space-y-8 bg-slate-950/40 p-8 sm:p-10 rounded-2xl border border-slate-800/80 shadow-2xl backdrop-blur-md">
+    <div className="min-h-screen bg-[#090D16] flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 font-sans select-none relative overflow-hidden">
+      {/* Subtle Background Glow Decorative Elements */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/5 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-1/4 left-1/3 w-[300px] h-[300px] bg-blue-500/5 blur-[100px] rounded-full pointer-events-none" />
+
+      <div className="max-w-md w-full space-y-6 bg-slate-900/40 p-8 sm:p-10 rounded-2xl border border-slate-800/60 shadow-[0_0_50px_-12px_rgba(16,185,129,0.1)] backdrop-blur-xl z-10 transition-all duration-300 hover:border-slate-800/80">
         
         {/* Top Header branding */}
         <div className="text-center">
-          <div className="mx-auto h-12 w-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shadow-lg shadow-emerald-500/5">
-            <ShieldCheck className="h-7 w-7 text-emerald-400" />
+          <div className="mx-auto h-12 w-12 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 border border-emerald-500/30 flex items-center justify-center shadow-md shadow-emerald-500/10">
+            <ShieldCheck className="h-6 w-6 text-emerald-400" />
           </div>
-          <h2 className="mt-4 text-3xl font-black text-white tracking-tighter uppercase font-display">DAB<span className="text-emerald-400">.ENT</span></h2>
-          <p className="mt-1.5 text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">Business Management System</p>
+          <h2 className="mt-4 text-3xl font-black text-white tracking-tight font-display">
+            DAB<span className="text-emerald-400 bg-clip-text">.ENT</span>
+          </h2>
+          <p className="mt-1 text-[11px] uppercase font-semibold tracking-[0.25em] text-slate-400">
+            Business Management System
+          </p>
         </div>
 
-        {isExpired && (
-          <div className="bg-emerald-500/10 border border-emerald-500/25 rounded-lg p-3.5 flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-            <div className="text-xs text-emerald-300 font-bold uppercase tracking-wider">
-              Your session has expired. Please sign in again.
-            </div>
+        {/* Dynamic Alerts Container */}
+        {(isExpired || error) && (
+          <div className="space-y-2 animate-fadeIn">
+            {isExpired && (
+              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3.5 flex items-center gap-3">
+                <AlertCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+                <p className="text-xs text-emerald-300/90 font-medium tracking-wide">
+                  Your session has expired. Please sign in again.
+                </p>
+              </div>
+            )}
+
+            {error && (
+              <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3.5 flex items-center gap-3">
+                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                <p className="text-xs text-rose-300/90 font-medium tracking-wide">
+                  {error}
+                </p>
+              </div>
+            )}
           </div>
         )}
 
-        {error && (
-          <div className="bg-rose-500/10 border border-rose-500/25 rounded-lg p-3.5 flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-rose-400 flex-shrink-0 mt-0.5" />
-            <div className="text-xs text-rose-300 font-bold uppercase tracking-wider">
-              {error}
-            </div>
-          </div>
-        )}
-
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form className="space-y-5" onSubmit={handleSubmit}>
           <div className="space-y-4">
+            {/* Email Field */}
             <div>
-              <label htmlFor="email" className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
+              <label htmlFor="email" className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
                 Business Email
               </label>
-              <input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="block w-full px-4 py-3 bg-[#0F172A] border border-slate-850 rounded-lg text-white placeholder-slate-600 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm transition-colors font-medium"
-                placeholder="name@company.com"
-              />
+              <div className="relative rounded-xl group focus-within:ring-2 focus-within:ring-emerald-500/40 transition-all">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-emerald-400 transition-colors">
+                  <Mail className="h-4 w-4" />
+                </div>
+                <input
+                  id="email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="block w-full pl-10 pr-4 py-3 bg-slate-950/60 border border-slate-800 rounded-xl text-white placeholder-slate-600 focus:outline-hidden text-sm transition-all font-medium focus:bg-slate-950"
+                  placeholder="name@company.com"
+                />
+              </div>
             </div>
 
+            {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
+              <label htmlFor="password" className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
                 Password
               </label>
-              <input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="block w-full px-4 py-3 bg-[#0F172A] border border-slate-850 rounded-lg text-white placeholder-slate-600 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm transition-colors font-medium"
-                placeholder="••••••••••••"
-              />
+              <div className="relative rounded-xl group focus-within:ring-2 focus-within:ring-emerald-500/40 transition-all">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-emerald-400 transition-colors">
+                  <Lock className="h-4 w-4" />
+                </div>
+                <input
+                  id="password"
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="block w-full pl-10 pr-4 py-3 bg-slate-950/60 border border-slate-800 rounded-xl text-white placeholder-slate-600 focus:outline-hidden text-sm transition-all font-medium focus:bg-slate-950"
+                  placeholder="••••••••••••"
+                />
+              </div>
             </div>
           </div>
 
@@ -107,7 +132,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={submitting}
-              className="group relative w-full flex justify-center py-3.5 px-4 border border-transparent text-xs font-bold uppercase tracking-widest rounded-lg text-white bg-emerald-500 hover:bg-emerald-400 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              className="w-full flex justify-center items-center py-3 px-4 border border-transparent text-xs font-bold uppercase tracking-widest rounded-xl text-slate-950 bg-emerald-400 hover:bg-emerald-300 active:scale-[0.99] focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-950 focus:ring-emerald-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-sans cursor-pointer shadow-lg shadow-emerald-500/10"
             >
               {submitting ? (
                 <span className="flex items-center gap-2">
@@ -122,44 +147,44 @@ export default function Login() {
         </form>
 
         {/* Demo Fast Account Selectors */}
-        <div className="mt-8 pt-6 border-t border-slate-800">
-          <p className="text-center text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4">
-            Operations Live Demo Accounts
-          </p>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <button
-              onClick={() => handleDemoSignIn('admin@dab.com', 'admin123')}
-              className="py-2.5 px-3 rounded-lg bg-slate-900/40 border border-slate-800 hover:border-slate-700/80 text-slate-300 font-medium text-left transition-all active:scale-95 cursor-pointer"
-            >
-              <span className="block font-black text-emerald-400 font-display text-[11px] uppercase tracking-wider">System Admin</span>
-              <span className="block text-[10px] text-slate-500 font-mono mt-0.5">admin@dab.com</span>
-            </button>
-            <button
-              onClick={() => handleDemoSignIn('manager@dab.com', 'manager123')}
-              className="py-2.5 px-3 rounded-lg bg-slate-900/40 border border-slate-800 hover:border-slate-700/80 text-slate-300 font-medium text-left transition-all active:scale-95 cursor-pointer"
-            >
-              <span className="block font-black text-slate-200 font-display text-[11px] uppercase tracking-wider">Store Manager</span>
-              <span className="block text-[10px] text-slate-500 font-mono mt-0.5">manager@dab.com</span>
-            </button>
-            <button
-              onClick={() => handleDemoSignIn('store@dab.com', 'store123')}
-              className="py-2.5 px-3 rounded-lg bg-slate-900/40 border border-slate-800 hover:border-slate-700/80 text-slate-300 font-medium text-left transition-all active:scale-95 cursor-pointer"
-            >
-              <span className="block font-black text-slate-200 font-display text-[11px] uppercase tracking-wider">Storekeeper</span>
-              <span className="block text-[10px] text-slate-500 font-mono mt-0.5">store@dab.com</span>
-            </button>
-            <button
-              onClick={() => handleDemoSignIn('sales@dab.com', 'sales123')}
-              className="py-2.5 px-3 rounded-lg bg-slate-900/40 border border-slate-800 hover:border-slate-700/80 text-slate-300 font-medium text-left transition-all active:scale-95 cursor-pointer"
-            >
-              <span className="block font-black text-slate-200 font-display text-[11px] uppercase tracking-wider">Sales Representative</span>
-              <span className="block text-[10px] text-slate-500 font-mono mt-0.5">sales@dab.com</span>
-            </button>
+        <div className="pt-5 border-t border-slate-800/60">
+          <div className="flex items-center justify-center gap-1.5 mb-3">
+            <Sparkles className="w-3 h-3 text-emerald-400/80" />
+            <p className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              Fast Demo Access
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { role: 'System Admin', email: 'admin@dab.com', pass: 'admin123', primary: true },
+              { role: 'Store Manager', email: 'manager@dab.com', pass: 'manager123' },
+              { role: 'Storekeeper', email: 'store@dab.com', pass: 'store123' },
+              { role: 'Sales Rep', email: 'sales@dab.com', pass: 'sales123' }
+            ].map((demo) => (
+              <button
+                key={demo.email}
+                type="button"
+                onClick={() => handleDemoSignIn(demo.email, demo.pass)}
+                className="p-2.5 rounded-xl bg-slate-950/40 border border-slate-800/70 hover:border-slate-700 hover:bg-slate-900/60 text-left transition-all active:scale-[0.97] group cursor-pointer"
+              >
+                <span className={`block font-bold text-[11px] uppercase tracking-wide group-hover:text-white transition-colors ${demo.primary ? 'text-emerald-400' : 'text-slate-300'}`}>
+                  {demo.role}
+                </span>
+                <span className="block text-[10px] text-slate-500 group-hover:text-slate-400 transition-colors font-mono mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap">
+                  {demo.email}
+                </span>
+              </button>
+            ))}
           </div>
         </div>
 
-        <div className="text-center text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-6 pt-2">
-          New account? <Link to="/register" className="text-emerald-400 font-black hover:text-emerald-300 underline">Register employee self-service</Link>
+        {/* Footer Link */}
+        <div className="text-center text-[11px] text-slate-400 font-medium tracking-wide pt-2">
+          New account?{' '}
+          <Link to="/register" className="text-emerald-400 font-semibold hover:text-emerald-300 hover:underline transition-colors">
+            Register employee self-service
+          </Link>
         </div>
 
       </div>
